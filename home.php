@@ -6,7 +6,6 @@ if (!isset($_SESSION["user"])) {
     exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,7 +17,9 @@ if (!isset($_SESSION["user"])) {
 
 <p>Welcome <?php echo $_SESSION["user"]; ?>!</p>
 
-<a hred="logout.php">Logout</a>
+<form method="post" action="logout.php">
+    <button type="submit">Logout</button>
+</form>
 
 </body>
 </html>

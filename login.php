@@ -1,12 +1,12 @@
 <?php
 session_start();
+$error = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    if ($username == "admin" && $password =="1234") {
+    if ($username == "admin" && $password == "12345") {
         $_SESSION["user"] = $username;
         header("Location: home.php");
         exit();
@@ -15,7 +15,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,16 +25,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <h2>Login Page</h2>
 
 <?php
-if (isset($error)) {
+if (!empty($error)) {
     echo "<p style='color:red;'>$error</p>";
 }
 ?>
 
-<form methods="post" action="login.php">
+<form method="post" action="login.php">
     Username:<br>
     <input type="text" name="username"><br><br>
 
-    Password: <br>
+    Password:<br>
     <input type="password" name="password"><br><br>
 
     <input type="submit" value="Login">
