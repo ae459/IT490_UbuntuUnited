@@ -68,8 +68,7 @@ $sessionKey = makeSessionKey();
 $expiresAt = date("Y-m-d H:i:s", time() + 3600);
 
 $ins = $pdo->prepare("INSERT INTO sessions (user_id, session_key, expires_at, is_active) VALUES (?, ?, ?, 1)");
-$ins->execute([(int)$user["id"], $sessionKey, $expiresAt])
-
+$ins->execute([(int)$user["id"], $sessionKey, $expiresAt]);
 return [
         "type" => "login_result",
         "request_id" => $req["request_id"],
@@ -143,4 +142,4 @@ $iniPath = __DIR__ . "/../../rabbitmqphp_example/testRabbitMQ.ini";
 
 $server = new rabbitMQServer($iniPath, "testServer");
 echo "DB Listener running...\n";
-$server->process_request("requestProcessor");
+$server->process_requests("requestProcessor");
