@@ -8,7 +8,7 @@ $username = "ridham_test1";
 $password = "pass123";
 
 
-echo = "ridham_test1";
+echo "REGISTER\n";
 $req = [
 	"type" => "register",
 	"request_id" => uniqid(),
