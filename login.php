@@ -1,19 +1,30 @@
 <?php
 session_start();
+require_once(__DIR__ . "/rabbitmq_helper.php");
+
 $error = "";
 
-if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    $username = $_POST["username"];
-    $password = $_POST["password"];
+$req = array();
+    $req["type"] = "login";
+    $req["request_id"] = uniqid();
+    $req["username"] = $username;
+    $req["password"] = $password;
 
-    if ($username == "admin" && $password == "12345") {
-        $_SESSION["user"] = $username;
+    $res = sendToDB($req);
+
+    if (isset($res["success"]) && $res["success"] == true) {
+        $_SESSION["session_key"] = $res["session_key"];
         header("Location: home.php");
         exit();
     } else {
-        $error = "Invalid username or password";
+        if (isset($res["message"])) {
+            $error = $res["message"];
+        } else {
+            $error = "Login failed";
+        }
     }
 }
+   
 ?>
 <!DOCTYPE html>
 <html>
@@ -39,6 +50,8 @@ if (!empty($error)) {
 
     <input type="submit" value="Login">
 </form>
+
+<p><a href="register.php">Register</a></p>
 
 </body>
 </html>
