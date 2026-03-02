@@ -23,7 +23,7 @@ $req = array();
             $error = "Login failed";
         }
     }
-}
+
    
 ?>
 <!DOCTYPE html>
