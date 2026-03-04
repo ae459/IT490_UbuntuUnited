@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+ini_set("display_startup_errors", 1);
 
 require_once(__DIR__ . "/db.php");
 require_once(__DIR__ . "/../../rabbitmqphp_example/rabbitMQLib.inc");
@@ -108,6 +111,9 @@ return [
 }
 
 function requestProcessor($req) {
+	echo "REQUEST RECIEVED\n";
+	print_r($req);
+
 	$pdo = getDb();
 
 	if (!isset($req["type"])) {
