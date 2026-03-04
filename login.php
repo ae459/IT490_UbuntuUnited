@@ -26,7 +26,7 @@ $req = array();
         if (isset($res["message"])) {
             $error = $res["message"];
         } else {
-            $error = "Invalid usernname or password";
+            $error = "Invalid usernname or password";   
         }
     }
 
