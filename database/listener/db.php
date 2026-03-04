@@ -1,10 +1,10 @@
 <?php
 
 function getDb() {
-	$host = "127.0.0.1";
+	$host = "10.185.132.28";
 	$db   = "ticketdb";
-	$user = "root";
-	$pass = "";
+	$user = "appuser";
+	$pass = "app123";
 
 	$dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
 	$pdo = new PDO($dsn, $user, $pass);
