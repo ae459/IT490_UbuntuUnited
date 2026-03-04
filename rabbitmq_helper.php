@@ -1,5 +1,4 @@
 <?php
-
 require_once(__DIR__ . "/rabbitmqphp_example/rabbitMQLib.inc");
 
 function sendToDB($reg) {

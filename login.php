@@ -3,10 +3,9 @@ session_start();
 require_once(__DIR__ . "/rabbitmq_helper.php");
 
 $error = "";
-$username = "";
-$password = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
 	$username = $_POST["username"];
 	$password = $_POST["password"];
 
@@ -23,10 +22,10 @@ $req = array();
         header("Location: home.php");
         exit();
     } else {
-        if (isset($res["message"])) {
+        if (is_array($res) && isset($res["message"])) {
             $error = $res["message"];
         } else {
-            $error = "Invalid usernname or password";
+            $error = "Login failed";
         }
     }
 
