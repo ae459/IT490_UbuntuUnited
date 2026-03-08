@@ -1,0 +1,1 @@
+[Wed Mar 04 12:39:29.755471 2026] [core:error] [pid 32374] (13)Permission denied: [client ::1:50838] AH00035: access to /login.php denied (filesystem path '/home/ae459/Desktop') because search permissions are missing on a component of the path
