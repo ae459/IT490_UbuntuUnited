@@ -29,6 +29,7 @@ if (isset($res["username"])) {
 <html>
 <head>
     <title>Home Page</title>
+	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
