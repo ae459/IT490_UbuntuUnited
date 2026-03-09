@@ -1,62 +1,39 @@
 <?php
 session_start();
-require_once(__DIR__ . "/rabbitmq_helper.php");
+require_once(DIR . "/rabbitmq_helper.php");
 
 $error = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST")
- {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-	$username = $_POST["username"];
-	$password = $_POST["password"];
-echo "REGISTER\n";
-$req = [
-	"type" => "register",
-	"request_id" => uniqid(),
-	"username" => $username,
-	"password" => $password
+$username = $_POST["username"];
+$password = $_POST["password"];
 
-];
-$res = $client->send_request($req);
-print_r($res);
+$req = array();
+$req["type"] = "login";
+$req["request_id"] = uniqid();
+$req["username"] = $username;
+$req["password"] = $password;
 
-echo "\nBAD LOGIN\n";
-$req2 = [
-	"type" => "login",
-	"request_id" => uniqid(),
-	"username" => $username,
-	"password" => "wrongpass"
+$res = sendToDB($req);
 
-];
-$res2 = $client->send_request($req2);
-print_r($res2);
-
-echo "\nGOOD LOGIN\n";
-$req3 = [
-	"type" => "login",
-	"request_id" => uniqid(),
-	"username" => $username,
-	"password" => $password
-];
-$res3 = $client->send_request($req3);
-print_r($res3);
-
-if (isset($res3["session_key"])) {
-	echo "\nVALIDATE SESSION\n";
-	$req4 = [
-		"type" => "validate_session",
-		"request_id" => uniqid(),
-		"session_key" => $res3["session_key"]
-	];
-	$res4 = $client->send_request($req4);
-	print_r($res4);
+if (is_array($res) && isset($res["success"]) && $res["success"] == true) {
+$_SESSION["session_key"] = $res["session_key"];
+header("Location: home.php");
+exit();
+} else {
+if (is_array($res) && isset($res["message"])) {
+$error = $res["message"];
+} else {
+$error = "Login failed";
+}
 }
 }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login Page</title>
+<title>Login Page</title>
 </head>
 <body>
 
@@ -64,18 +41,18 @@ if (isset($res3["session_key"])) {
 
 <?php
 if (!empty($error)) {
-    echo "<p style='color:red;'>$error</p>";
+echo "<p style='color:red;'>$error</p>";
 }
 ?>
 
 <form method="post" action="login.php">
-    Username:<br>
-    <input type="text" name="username"><br><br>
+Username:<br>
+<input type="text" name="username" required><br><br>
 
-    Password:<br>
-    <input type="password" name="password"><br><br>
+Password:<br>
+<input type="password" name="password" required><br><br>
 
-    <input type="submit" value="Login">
+<input type="submit" value="Login">
 </form>
 
 <p><a href="register.php">Register</a></p>
