@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once(DIR . "/rabbitmq_helper.php");
+require_once(__DIR__ . "/rabbitmq_helper.php");
 
 $error = "";
 
