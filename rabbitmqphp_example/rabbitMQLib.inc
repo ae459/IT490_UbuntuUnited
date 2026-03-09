@@ -13,7 +13,7 @@ class rabbitMQServer
 	private $exchange;
 	private $queue;
 	private $routing_key = '*';
-	private $exchange_type = "topic";
+	private $exchange_type = "direct";
 	private $auto_delete = false;
 
 	function __construct($machine, $server = "rabbitMQ")
