@@ -12,6 +12,8 @@ class rabbitMQServer
 	private $VHOST;
 	private $exchange;
 	private $queue;
+	private $callback;
+	private $conn_queue;
 	private $routing_key = '*';
 	private $exchange_type = "direct";
 	private $auto_delete = false;
@@ -144,9 +146,11 @@ class rabbitMQClient
 	private $VHOST;
 	private $exchange;
 	private $queue;
+	private $conn_queue;
 	private $routing_key = '*';
 	private $response_queue = array();
 	private $exchange_type = "topic";
+	private $auto_delete = false;
 
 	function __construct($machine, $server = "rabbitMQ")
 	{
