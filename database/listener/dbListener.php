@@ -366,6 +366,41 @@ function markNotificationSent($pdo, $req) {
 
 }
 
+function bookEvent($pdo, $req) {
+	$userId = getUserIdFromSession($pdo, $req["session_key"]);
+	if ($userId == 0) {
+		return ["success"==>false, "message"==>"Invalid session"];
+	}
+
+	$eventId = (int)$req["event_id"];
+	$qty = (int)$req["qty"];
+	if ($qty < 1) $qty = 1;
+
+	$q = $pdo->prepare("INSERT INTO bookings (user_id, event_id, qty) VALUES (?, ?, ?)");
+	$q->execute([$userId, $eventId, $qty]);
+
+	return ["success"=>true, "message"=>"Event booked"];
+}
+
+function listMyBookings($pdo, $req) {
+	$userId = getUserIdFromSession($pdo, $req["session_key"]);
+	if ($userId == 0) {
+		return ["success"=>false, "message"=>"Invalid session"];
+	}
+
+	$q = $pdo->prepare("
+		SELECT b.id, b.qty, b.created_at, e.id AS event_id, e.title, e.event_date
+		FROM bookings b
+		JOIN events e on e.id = b.event_id
+		WHERE b.user_id = ?
+		ORDER BY b.created_at DESC
+		LIMIT 50
+	");
+	$q->execute([$userId]);
+	$rows = $q->fetchALL(PDO::FETCH_ASSOC);
+
+	return ["success"=>true, "bookings"=>$rows];
+}
 
 function requestProcessor($req) {
 	echo "REQUEST RECIEVED\n";
@@ -413,6 +448,8 @@ function requestProcessor($req) {
 	if ($req["type"] == "get_pending_notifications") return getPendingNotifications($pdo, $req);
 	if ($req["type"] == "mark_notification_sent") return markNotificationSent($pdo, $req);
 
+	if ($req["type"] == "book_event") return bookEvent($pdo, $req);
+	if ($req["type"] == "list_my_bookings") return listMyBookings($pdo, $req);
 
 return [
         "type" => "error",
