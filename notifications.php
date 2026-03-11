@@ -37,7 +37,7 @@ $pendingNotifications = [
 
 <div class="container">
 
-<h1>Notifications / 2FA</h1>
+<h1>Notifications</h1>
 
 <h2>Send Notification</h2>
 
