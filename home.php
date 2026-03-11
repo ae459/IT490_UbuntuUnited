@@ -28,16 +28,34 @@ if (isset($res["username"])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home Page</title>
-	<link rel="stylesheet" href="css/style.css">
+<!DOCTYPE html>
+<html>
+<head>
+<title>UbuntuUnited Home</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
-<h2>Home Page</h2>
+<h2>Welcome <?php echo $username; ?>!</h2>
 
-<p>Welcome <?php echo $username;  ?>!</p>
+<p>This is the main homepage after login.</p>
 
-<p>This is the homepage after successful login.</p>
+<h3>Main Pages</h3>
+
+<p><a href="events.php">Browse Events</a></p>
+
+<p><a href="reviews.php">Reviews</a></p>
+
+<p><a href="recommendations.php">Recommendations</a></p>
+
+<p><a href="friends.php">Friends</a></p>
+
+<p><a href="invite.php">Create Invite</a></p>
+
+<p><a href="notifications.php">Notifications / 2FA</a></p>
+
+<p><a href="search.php">Search Artists / Events / Venues</a></p>
 
 <p><a href="logout.php">Logout</a></p>
 

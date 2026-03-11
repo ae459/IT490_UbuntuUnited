@@ -43,6 +43,10 @@ $events = [
 <a href="events.php">Events</a>
 <a href="reviews.php">Reviews</a>
 <a href="recommendations.php">Recommendations</a>
+<a href="friends.php">Friends</a>
+<a href="invite.php">Invites</a>
+<a href="notifications.php">Notifications</a>
+<a href="search.php">Search</a>
 <a href="logout.php">Logout</a>
 </div>
 </div>
@@ -81,11 +85,11 @@ View Event
 Write Review
 </a>
 
-<a class="btn secondary-btn" href="#">
+<a class="btn secondary-btn" href="notifications.php">
 Book Event
 </a>
 
-<a class="btn secondary-btn" href="#">
+<a class="btn secondary-btn" href="invite.php">
 Invite Friends
 </a>
 
