@@ -25,39 +25,86 @@ if (isset($res["username"])) {
 	$username = $res["username"];
 }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-<!DOCTYPE html>
-<html>
-<head>
-<title>UbuntuUnited Home</title>
-<link rel="stylesheet" href="css/style.css">
-</head>
 
+<!DOCTYPE html>
+<html>
+<head>
+	<title>UbuntuUnited Home</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
 <body>
 
-<h2>Welcome <?php echo $username; ?>!</h2>
+<div class="navbar">
+    <div class="logo">UbuntuUnited</div>
+    <div class="nav-links">
+        <a href="home.php">Home</a>
+        <a href="events.php">Events</a>
+        <a href="reviews.php">Reviews</a>
+        <a href="recommendations.php">Recommendations</a>
+        <a href="friends.php">Friends</a>
+        <a href="invite.php">Invites</a>
+        <a href="notifications.php">Notifications</a>
+        <a href="search.php">Search</a>
+        <a href="logout.php">Logout</a>
+    </div>
+</div>
 
-<p>This is the main homepage after login.</p>
+<div class="page-wrapper">
+    <div class="container">
+        <h1>Welcome <?php echo htmlspecialchars($username); ?>!</h1>
+        <p class="subtitle">UbuntuUnited is your event hub for browsing events, reading reviews, inviting friends, and managing notifications.</p>
 
-<h3>Main Pages</h3>
+        <div class="quick-links">
+            <div class="quick-link-card">
+                <h3>Browse Events</h3>
+                <p>Look through concerts, artists, and venues.</p>
+                <a class="btn" href="events.php">Open Events</a>
+            </div>
 
-<p><a href="events.php">Browse Events</a></p>
+            <div class="quick-link-card">
+                <h3>Reviews</h3>
+                <p>Read reviews and write your own event feedback.</p>
+                <a class="btn" href="reviews.php">Open Reviews</a>
+            </div>
 
-<p><a href="reviews.php">Reviews</a></p>
+            <div class="quick-link-card">
+                <h3>Recommendations</h3>
+                <p>See suggested events based on ratings and reviews.</p>
+                <a class="btn" href="recommendations.php">View Recommendations</a>
+            </div>
 
-<p><a href="recommendations.php">Recommendations</a></p>
+            <div class="quick-link-card">
+                <h3>Friends</h3>
+                <p>Manage your friend list and requests.</p>
+                <a class="btn" href="friends.php">Open Friends</a>
+            </div>
 
-<p><a href="friends.php">Friends</a></p>
+            <div class="quick-link-card">
+                <h3>Invites</h3>
+                <p>Create invite links and share events with others.</p>
+                <a class="btn" href="invite.php">Create Invite</a>
+            </div>
 
-<p><a href="invite.php">Create Invite</a></p>
+            <div class="quick-link-card">
+                <h3>Notifications / 2FA</h3>
+                <p>Manage alerts and prepare the text-based 2FA flow.</p>
+                <a class="btn" href="notifications.php">Open Notifications</a>
+            </div>
 
-<p><a href="notifications.php">Notifications / 2FA</a></p>
+            <div class="quick-link-card">
+                <h3>Search</h3>
+                <p>Search artists, events, and venues in one place.</p>
+                <a class="btn" href="search.php">Open Search</a>
+            </div>
 
-<p><a href="search.php">Search Artists / Events / Venues</a></p>
-
-<p><a href="logout.php">Logout</a></p>
+            <div class="quick-link-card">
+                <h3>Logout</h3>
+                <p>Sign out of your account safely.</p>
+                <a class="btn danger-btn" href="logout.php">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
