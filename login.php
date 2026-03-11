@@ -33,30 +33,35 @@ $error = "Login failed";
 <!DOCTYPE html>
 <html>
 <head>
-<title>Login Page</title>
-<link rel="stylesheet" href="css/style.css">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<h2>Login Page</h2>
+<div class="auth-container">
+    <h1>Login Page</h1>
+    <p class="subtitle">Sign in to continue to UbuntuUnited.</p>
 
-<?php
-if (!empty($error)) {
-echo "<p style='color:red;'>$error</p>";
-}
-?>
+    <?php
+    if (!empty($error)) {
+        echo "<p class='error'>$error</p>";
+    }
+    ?>
 
-<form method="post" action="login.php">
-Username:<br>
-<input type="text" name="username" required><br><br>
+    <form method="post" action="login.php">
+        <label>Username:</label>
+        <input type="text" name="username" required>
 
-Password:<br>
-<input type="password" name="password" required><br><br>
+        <label>Password:</label>
+        <input type="password" name="password" required>
 
-<input type="submit" value="Login">
-</form>
+        <button type="submit">Login</button>
+    </form>
 
-<p><a href="register.php">Register</a></p>
+    <div class="auth-links">
+        <a href="register.php">Register</a>
+    </div>
+</div>
 
 </body>
 </html>
