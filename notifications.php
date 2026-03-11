@@ -24,6 +24,23 @@ $pendingNotifications = [
 
 <body>
 
+<div class="navbar">
+    <div class="logo">UbuntuUnited</div>
+    <div class="nav-links">
+        <a href="home.php">Home</a>
+        <a href="events.php">Events</a>
+        <a href="reviews.php">Reviews</a>
+        <a href="recommendations.php">Recommendations</a>
+        <a href="friends.php">Friends</a>
+        <a href="invite.php">Invites</a>
+        <a href="notifications.php">Notifications</a>
+        <a href="search.php">Search</a>
+        <a href="logout.php">Logout</a>
+    </div>
+</div>
+
+<div class="page-wrapper">
+
 <div class="container">
 
 <h1>Notifications / 2FA</h1>
