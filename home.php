@@ -53,8 +53,5 @@ if(is_array($eventRes) && isset($eventRes["success"]) && $eventRes["success"] ==
 
 <p>Welcome <?php echo $username;  ?>!</p>
 
-
-
-
 </body>
 </html>
