@@ -1,5 +1,6 @@
 USE ticketdb;
 
+DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS event_invites;
 DROP TABLE IF EXISTS friends;
@@ -112,5 +113,19 @@ CREATE TABLE notifications (
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_notifications_status ON notifications(status);
 
-ALTER TABLE users ADD COLUMN email VARCHAR(150);
-ALTER TABLE users ADD COLUMN phone VARCHAR(30);
+CREATE TABLE bookings (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	user_id INT NOT NULL,
+	event_id INT NOT NULL,
+	qty INT NOT NULL DEFAULT 1,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (user_id) REFERENCES users(id),
+	FOREIGN KEY (event_id) REFERENCES events(id)
+);
+
+CREATE INDEX idx_bookings_user ON bookings(user_id);
+CREATE INDEX idx_bookings_event ON bookings(event_id);
+
+-- email/phonn columns are required for notifications
+-- if they are added once, do not add them here again
+-- run the commands in the terminal section below if needed
