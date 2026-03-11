@@ -215,7 +215,7 @@ function getRecommendations($pdo, $req) {
 	$q->execute([$userId]);
 	$liked = $q->fetchALL(PDO::FETCH_ASSOC);
 
-	if (count($liked) == 0 {
+	if (count($liked) == 0) {
 		$popular = $pdo->query("
 			SELECT id, title, event_date, status
 			FROM events
@@ -247,6 +247,124 @@ function getRecommendations($pdo, $req) {
 	return ["success"=>true, "events"=>$rows];
 }
 
+function addFriend($pdo, $req) {
+	$userId = getUserIdFromSession($pdo, $req["session_key"]);
+	if ($userId == 0) return ["success"=>false, "message"=>"Cannot add yourself"];
+
+	$q = $pdo->prepare("INSERT IGNORE INTO friends (user_id, friend_user_id, status) VALUES (?, ?, 'PENDING')");
+	$q->execute([$userId, $friendId]);
+
+	return ["success"=>true, "message"=>"Friend request sent"];
+}
+
+function acceptFriend($pdo, $req) {
+	$userId = getUserIdFromSession($pdo, $req["session_key"]);
+	if ($userId == 0) return ["success"=>false, "message"=>"Invalid session"];
+
+	$friendId = (int)$req["friend_user_id"];
+
+	$q = $pdo->prepare("UPDATE friends SET status='ACCEPTED' WHERE user_id=? AND friend_user_id=?");
+	$q->execute([$friendId, $userId]);
+
+	$q2 = $pdo->prepare("INSERT IGNORE INTO friends (user_id, friend_user_id, status) VALUES (?, ?, 'ACCEPTED')");
+	$q2->execute([$userId, $friendId]);
+
+	return ["success"=>true, "message"=>"Friend accepted"];
+}
+
+function listFriends($pdo, $req) {
+	$userId = getUserIdFromSession($pdo, $req["session_key"]);
+	if ($userId == 0) return ["success"=>false, "message"=>"Invalid session"];
+
+	$q = $pdo->prepare("
+		SELECT f.friend_user_id, u.username, f.status
+		FROM friends f
+		JOIN users u on u.id = f.friend_user_id
+		WHERE f.user_id=?
+		ORDER BY u.username ASC
+	");
+	$q->execute([$userId]);
+	$rows = $q->fetchALL(PDO::FETCH_ASSOC);
+
+	return ["success"=>true, "friends"=>$rows];
+}
+
+function createInvite($pdo, $req) {
+	$inviterId = getUserIdFromSession($pdo, $req["session_key"]);
+	if ($inviterId == 0) return ["success"=>false, "message"=>"Invalid session"];
+
+	$eventId = (int)$req["event_id"];
+	$inviteeUserId = isset($req["invitee_user_id"]) ? (int)$req["invitee_user_id"] : null;
+
+	$token = bin2hex(randon_bytes(16));
+	$expiresAt = date("Y-m-d H:i:s", time() + 86400);
+
+	$q = $pdo->prepare("
+		INSERT INTO event_invites (event_id, inviter_user_id, invitee_user_id, invite_token, expires_at)
+		VALUES (?, ?, ?, ?, ?)
+	");
+	$q->execute([$eventId, $inviterId, $inviteeUserId, $token, $expiresAt]);
+
+	return ["success"=>true, "invite_token"=>$token];
+}
+
+function acceptInviteByToken($pdo, $req) {
+	$userId = getUserIdFromSession($pdo, $req["session_key"]);
+	if ($userId == 0) return ["success"=>false, "message"=>"Invalid session"];
+
+	$token = $req["invite_token"];
+
+	$q = $pdo->prepare("SELECT id, expires_at, status FROM event_invites WHERE invite_token=? LIMIT 1");
+	$q->execute([$token]);
+	$invite = $q->fetch(PDO::FETCH_ASSOC);
+
+	if (!$invite) return ["success"=>false, "message"=>"Invite not found"];
+	if ($invite["status"] != "SENT") return ["success"=>false, "message"=>"Invite already used"];
+	if ($invite["expires_at"] != null && strototime($invite["expires_at"]) < time()) return ["success"=>false, "message"=>"Invite expired"];
+	
+	$u = $pdo->prepare("UPDATE event_invites SET invitee_user_id=?, status='ACCEPTED' WHERE id=?");
+	$u->execute([$userId, (int)$invite["id"]]);
+	
+	return ["success"=>true, "message"=>"Invite accepted"];
+}
+
+function createNotification($pdo, $req) {
+	$userId = (int)$req["user_id"];
+	$channel = $req["channel"];
+	$title = $req["title"];
+	$message = $req["message"];
+
+	$q = $pdo->prepare("
+		INSERT INTO notifications (user_id, channel, title, message, status)
+		VALUES (?, ?, ?, ?, 'PENDING')
+	");
+	$q->execute([$userId, $channel, $title, $message]);
+
+	return ["success"=>true, "message"=>"Notification saved"];
+}
+
+function getPendingNotifications($pdo, $req) {
+	$q = $pdo->query("
+		SELECT id, user_id, channel, title, message
+		FROM notifications
+		WHERE status='PENDING'
+		ORDER BY created_at ASC
+		LIMIT 25
+	");
+	$rows = $q->fetchALL(PDO::FETCH_ASSOC);
+
+	return ["success"=>true, "notifications"=>$rows];
+}
+
+function markNotificationSent($pdo, $req) {
+	$id = (int)$req["notification_id"];
+	
+	$q = $pdo->prepare("UPDATE notifications SET status='SENT', sent_at=NOW() WHERE id=?");
+	$q->execute([$id]);
+	
+	return ["success"=>true, "message"=>"Marked sent"];
+
+}
 
 
 function requestProcessor($req) {
@@ -283,6 +401,18 @@ function requestProcessor($req) {
 	if ($req["type"] == "get_events_reviews") return getEventReviews($pdo, $req);
 
 	if ($req["type"] == "get_recommendations") return getRecommendations($pdo, $req);
+
+	if ($req["type"] == "add_friend") return addFriend($pdo, $req);
+	if ($req["type"] == "accept_friend") return acceptFriend($pdo, $req);
+	if ($req["type"] == "list_friends") return listFriends($pdo, $req);
+
+ 	if ($req["type"] == "create_invite") return createInvite($pdo, $req);
+	if ($req["type"] == "accept_invite_by_token") return acceptInviteByToken($pdo, $req);
+
+	if ($req["type"] == "create_notification") return createNotification($pdo, $req);
+	if ($req["type"] == "get_pending_notifications") return getPendingNotifications($pdo, $req);
+	if ($req["type"] == "mark_notification_sent") return markNotificationSent($pdo, $req);
+
 
 return [
         "type" => "error",
