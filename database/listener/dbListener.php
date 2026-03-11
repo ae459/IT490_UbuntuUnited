@@ -369,7 +369,7 @@ function markNotificationSent($pdo, $req) {
 function bookEvent($pdo, $req) {
 	$userId = getUserIdFromSession($pdo, $req["session_key"]);
 	if ($userId == 0) {
-		return ["success"==>false, "message"==>"Invalid session"];
+		return ["success"=>false, "message"=>"Invalid session"];
 	}
 
 	$eventId = (int)$req["event_id"];
