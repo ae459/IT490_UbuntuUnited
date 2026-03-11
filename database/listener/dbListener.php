@@ -296,7 +296,7 @@ function createInvite($pdo, $req) {
 	$eventId = (int)$req["event_id"];
 	$inviteeUserId = isset($req["invitee_user_id"]) ? (int)$req["invitee_user_id"] : null;
 
-	$token = bin2hex(randon_bytes(16));
+	$token = bin2hex(random_bytes(16));
 	$expiresAt = date("Y-m-d H:i:s", time() + 86400);
 
 	$q = $pdo->prepare("
@@ -320,7 +320,7 @@ function acceptInviteByToken($pdo, $req) {
 
 	if (!$invite) return ["success"=>false, "message"=>"Invite not found"];
 	if ($invite["status"] != "SENT") return ["success"=>false, "message"=>"Invite already used"];
-	if ($invite["expires_at"] != null && strototime($invite["expires_at"]) < time()) return ["success"=>false, "message"=>"Invite expired"];
+	if ($invite["expires_at"] != null && strtotime($invite["expires_at"]) < time()) return ["success"=>false, "message"=>"Invite expired"];
 	
 	$u = $pdo->prepare("UPDATE event_invites SET invitee_user_id=?, status='ACCEPTED' WHERE id=?");
 	$u->execute([$userId, (int)$invite["id"]]);
