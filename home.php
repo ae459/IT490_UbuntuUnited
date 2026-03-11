@@ -97,12 +97,6 @@ if (isset($res["username"])) {
                 <a class="btn" href="search.php">Open Search</a>
             </div>
 
-            <div class="quick-link-card">
-                <h3>Logout</h3>
-                <p>Sign out of your account safely.</p>
-                <a class="btn danger-btn" href="logout.php">Logout</a>
-            </div>
-        </div>
     </div>
 </div>
 
