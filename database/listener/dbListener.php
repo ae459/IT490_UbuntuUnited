@@ -468,6 +468,18 @@ function requestProcessor($req) {
 		);
 	}
 
+	// Handler to return the Ticketmaster API key (for admin/debug only)
+	if ($req["type"] == "get_ticketmaster_api_key") {
+		$apiKey = getenv('TICKETMASTER_API_KEY');
+		return array(
+			"type" => "ticketmaster_api_key_result",
+			"request_id" => $req["request_id"],
+			"success" => $apiKey !== false && trim($apiKey) !== "",
+			"api_key" => $apiKey !== false ? $apiKey : null,
+			"message" => $apiKey !== false ? "API key retrieved" : "API key not set"
+		);
+	}
+
 	return [
 		"type" => "error",
 		"request_id" => $req["request_id"],
