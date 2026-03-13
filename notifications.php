@@ -55,6 +55,9 @@ $pendingNotifications = [
 <option>Text</option>
 </select>
 
+<label>Recipients</label>
+<input type="text" name="recipient" placeholder="Enter email or phone number">
+
 <button>Send Notification</button>
 
 </form>
