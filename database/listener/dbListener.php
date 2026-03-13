@@ -3,8 +3,10 @@ error_reporting(E_ALL);
 ini_set("display_errors", 1);
 ini_set("display_startup_errors", 1);
 
+
 require_once(__DIR__ . "/db.php");
 require_once(__DIR__ . "/../../rabbitmqphp_example/rabbitMQLib.inc");
+require_once(__DIR__ . "/../../ticketmaster_service.php");
 
 function makeSessionKey() {
 	return bin2hex(random_bytes(32));
@@ -402,8 +404,9 @@ function listMyBookings($pdo, $req) {
 	return ["success"=>true, "bookings"=>$rows];
 }
 
+
 function requestProcessor($req) {
-	echo "REQUEST RECIEVED\n";
+	echo "REQUEST RECEIVED\n";
 	print_r($req);
 
 	$pdo = getDb();
@@ -441,7 +444,7 @@ function requestProcessor($req) {
 	if ($req["type"] == "accept_friend") return acceptFriend($pdo, $req);
 	if ($req["type"] == "list_friends") return listFriends($pdo, $req);
 
- 	if ($req["type"] == "create_invite") return createInvite($pdo, $req);
+	if ($req["type"] == "create_invite") return createInvite($pdo, $req);
 	if ($req["type"] == "accept_invite_by_token") return acceptInviteByToken($pdo, $req);
 
 	if ($req["type"] == "create_notification") return createNotification($pdo, $req);
@@ -451,12 +454,26 @@ function requestProcessor($req) {
 	if ($req["type"] == "book_event") return bookEvent($pdo, $req);
 	if ($req["type"] == "list_my_bookings") return listMyBookings($pdo, $req);
 
-return [
-        "type" => "error",
-        "request_id" => $req["request_id"],
-        "success" => false,
-        "message" => "Unknown request type"
-    ];
+	// Ticketmaster API integration
+	if ($req["type"] == "get_ticketmaster_events") {
+		$params = isset($req["params"]) && is_array($req["params"]) ? $req["params"] : array();
+		$results = fetchTicketmasterEvents($params);
+		return array(
+			"type" => "ticketmaster_events_result",
+			"request_id" => $req["request_id"],
+			"success" => $results["success"],
+			"message" => isset($results["message"]) ? $results["message"] : "",
+			"count" => isset($results["count"]) ? $results["count"] : 0,
+			"events" => isset($results["events"]) ? $results["events"] : array()
+		);
+	}
+
+	return [
+		"type" => "error",
+		"request_id" => $req["request_id"],
+		"success" => false,
+		"message" => "Unknown request type"
+	];
 }
 
 $iniPath = __DIR__ . "/../../rabbitmqphp_example/testRabbitMQ.ini";

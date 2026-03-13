@@ -1,7 +1,7 @@
 <?php
 
 function getDb() {
-	$host = "10.185.132.28";
+	$host = "10.185.132.84";
 	$db   = "ticketdb";
 	$user = "appuser";
 	$pass = "app123";
