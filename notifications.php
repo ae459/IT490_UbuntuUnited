@@ -47,10 +47,10 @@ $pendingNotifications = [
 <input type="text" placeholder="Notification title">
 
 <label>Message</label>
-<textarea placeholder="Notification message"></textarea>
+<textarea name="message" placeholder="Notification message" required></textarea>
 
 <label>Channel</label>
-<select>
+<select name="channel" required>
 <option>Email</option>
 <option>Text</option>
 </select>
