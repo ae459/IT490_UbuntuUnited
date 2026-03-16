@@ -1,7 +1,8 @@
 <?php
 error_reporting(E_ALL);
-ini_set("display_errors", 1);
-ini_set("display_startup_errors", 1);
+// Keep runtime errors out of response/output in production.
+ini_set("display_errors", 0);
+ini_set("display_startup_errors", 0);
 
 
 require_once(__DIR__ . "/db.php");
@@ -406,17 +407,56 @@ function listMyBookings($pdo, $req) {
 
 
 function requestProcessor($req) {
-	echo "REQUEST RECEIVED\n";
-	print_r($req);
-
-	$pdo = getDb();
-
-	if (!isset($req["type"])) {
-		return ["type"=>"error","success"=>false,"message"=>"Missing type"];
+	// Avoid leaking request payloads (passwords/session keys/API params).
+	$debug = getenv("APP_DEBUG");
+	if ($debug !== false && strtolower(trim($debug)) === "true") {
+		error_log("REQUEST RECEIVED: " . json_encode(array("type" => $req["type"] ?? null, "request_id" => $req["request_id"] ?? null)));
 	}
 
 	if (!isset($req["request_id"])) {
 		$req["request_id"] = "no_id";
+	}
+
+	if (!isset($req["type"])) {
+		return ["type"=>"error","request_id"=>$req["request_id"],"success"=>false,"message"=>"Missing type"];
+	}
+
+	// Ticketmaster API integration (does not require DB).
+	if ($req["type"] == "get_ticketmaster_events") {
+		$params = isset($req["params"]) && is_array($req["params"]) ? $req["params"] : array();
+		if (!function_exists("fetchTicketmasterEvents")) {
+			return array(
+				"type" => "ticketmaster_events_result",
+				"request_id" => $req["request_id"],
+				"success" => false,
+				"message" => "Ticketmaster service unavailable",
+				"count" => 0,
+				"events" => array()
+			);
+		}
+		$results = fetchTicketmasterEvents($params);
+		return array(
+			"type" => "ticketmaster_events_result",
+			"request_id" => $req["request_id"],
+			"success" => $results["success"],
+			"message" => isset($results["message"]) ? $results["message"] : "",
+			"count" => isset($results["count"]) ? $results["count"] : 0,
+			"events" => isset($results["events"]) ? $results["events"] : array()
+		);
+	}
+
+	try {
+		$pdo = getDb();
+	} catch (Throwable $e) {
+		if ($debug !== false && strtolower(trim($debug)) === "true") {
+			error_log("DB connection error: " . $e->getMessage());
+		}
+		return [
+			"type" => "error",
+			"request_id" => $req["request_id"],
+			"success" => false,
+			"message" => "Database connection unavailable"
+		];
 	}
 
 	if ($req["type"] == "register") {
@@ -453,32 +493,6 @@ function requestProcessor($req) {
 
 	if ($req["type"] == "book_event") return bookEvent($pdo, $req);
 	if ($req["type"] == "list_my_bookings") return listMyBookings($pdo, $req);
-
-	// Ticketmaster API integration
-	if ($req["type"] == "get_ticketmaster_events") {
-		$params = isset($req["params"]) && is_array($req["params"]) ? $req["params"] : array();
-		$results = fetchTicketmasterEvents($params);
-		return array(
-			"type" => "ticketmaster_events_result",
-			"request_id" => $req["request_id"],
-			"success" => $results["success"],
-			"message" => isset($results["message"]) ? $results["message"] : "",
-			"count" => isset($results["count"]) ? $results["count"] : 0,
-			"events" => isset($results["events"]) ? $results["events"] : array()
-		);
-	}
-
-	// Handler to return the Ticketmaster API key (for admin/debug only)
-	if ($req["type"] == "get_ticketmaster_api_key") {
-		$apiKey = getenv('TICKETMASTER_API_KEY');
-		return array(
-			"type" => "ticketmaster_api_key_result",
-			"request_id" => $req["request_id"],
-			"success" => $apiKey !== false && trim($apiKey) !== "",
-			"api_key" => $apiKey !== false ? $apiKey : null,
-			"message" => $apiKey !== false ? "API key retrieved" : "API key not set"
-		);
-	}
 
 	return [
 		"type" => "error",

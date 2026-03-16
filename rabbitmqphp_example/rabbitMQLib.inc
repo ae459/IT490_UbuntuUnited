@@ -40,12 +40,8 @@ class rabbitMQServer
 
 	function process_message($msg)
 	{
-		// send the ack to clear the item from the queue
-		if ($msg->getRoutingKey() !== "*")
-    {
-      return;
-    }
-    $this->conn_queue->ack($msg->getDeliveryTag());
+		// Ack immediately to prevent consumer lockups from unacked deliveries.
+		$this->conn_queue->ack($msg->getDeliveryTag());
 		try
 		{
 			if ($msg->getReplyTo())
@@ -177,8 +173,16 @@ class rabbitMQClient
 		$uid = $response->getCorrelationId();
 		if (!isset($this->response_queue[$uid]))
 		{
-		  echo  "unknown uid\n";
-		  return true;
+		  // If correlation_id is missing/mismatched but only one request is pending,
+		  // map this response to that request to avoid indefinite blocking.
+		  if (count($this->response_queue) === 1) {
+			$keys = array_keys($this->response_queue);
+			$uid = $keys[0];
+		  } else {
+			// Ack unexpected messages so stale responses cannot block the consumer.
+			$this->conn_queue->ack($response->getDeliveryTag());
+			return true;
+		  }
 		}
     $this->conn_queue->ack($response->getDeliveryTag());
 		$body = $response->getBody();
@@ -194,6 +198,7 @@ class rabbitMQClient
 	function send_request($message)
 	{
 		$uid = uniqid();
+		$callbackQueueName = $this->queue."_response_".$uid;
 
 		$json_message = json_encode($message);
 		try
@@ -215,7 +220,8 @@ class rabbitMQClient
       $exchange->setType($this->exchange_type);
 
       $callback_queue = new AMQPQueue($channel);
-      $callback_queue->setName($this->queue."_response");
+			// Use a unique reply queue per request to prevent cross-request collisions.
+			$callback_queue->setName($callbackQueueName);
       $callback_queue->declare();
 			$callback_queue->bind($exchange->getName(),$this->routing_key.".response");
 
@@ -223,7 +229,7 @@ class rabbitMQClient
 			$this->conn_queue->setName($this->queue);
 			$this->conn_queue->bind($exchange->getName(),$this->routing_key);
 
-			$exchange->publish($json_message,$this->routing_key,AMQP_NOPARAM,array('reply_to'=>$callback_queue->getName(),'correlation_id'=>$uid));
+			$exchange->publish($json_message,$this->routing_key,AMQP_NOPARAM,array('reply_to'=>$callbackQueueName,'correlation_id'=>$uid));
       $this->response_queue[$uid] = "waiting";
 			$callback_queue->consume(array($this,'process_response'));
 

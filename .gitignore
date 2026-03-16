@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# OS/editor temp
+.DS_Store
+*.swp
+*.swo

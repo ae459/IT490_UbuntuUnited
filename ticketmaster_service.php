@@ -2,7 +2,11 @@
 
 require_once(__DIR__ . "/env_loader.php");
 
-loadEnvFile(__DIR__ . "/.env");
+
+$envPath = __DIR__ . "/.env";
+if (is_readable($envPath)) {
+	loadEnvFile($envPath);
+}
 
 function fetchTicketmasterEvents(array $params = array()) {
 	$apiKey = getenv('TICKETMASTER_API_KEY');
