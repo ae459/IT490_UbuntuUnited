@@ -1,108 +1,132 @@
 <?php
-$events = [
-    [
-        "id" => 1,
-        "title" => "Drake Live in Newark",
-        "date" => "March 20, 2026",
-        "location" => "Prudential Center",
-        "category" => "Concert",
-        "description" => "Live music event with a huge crowd."
-    ],
-    [
-        "id" => 2,
-        "title" => "Summer EDM Festival",
-        "date" => "April 5, 2026",
-        "location" => "MetLife Stadium",
-        "category" => "Festival",
-        "description" => "Outdoor EDM festival with DJs and lights."
-    ],
-    [
-        "id" => 3,
-        "title" => "Comedy Night Special",
-        "date" => "April 15, 2026",
-        "location" => "NJPAC",
-        "category" => "Comedy",
-        "description" => "Stand-up comedy night with top comedians."
-    ]
-];
-?>
+session_start();
 
+require_once("rabbitmq_helper.php");
+require_once(__DIR__ . "/database/listener/db.php");
+
+$keyword = "";
+if (isset($_GET["keyword"])) {
+$keyword = trim($_GET["keyword"]);
+}
+
+$errorMsg = "";
+
+if ($keyword !== "") {
+
+$req = [
+"type" => "get_ticketmaster_events",
+"request_id" => uniqid(),
+"keyword" => $keyword,
+"size" => 50
+];
+
+$resp = sendToDB($req);
+
+if (!is_array($resp) || !isset($resp["success"]) || $resp["success"] != true) {
+if (is_array($resp) && isset($resp["message"])) {
+$errorMsg = $resp["message"];
+} else {
+$errorMsg = "Failed to fetch events from Ticketmaster.";
+}
+}
+}
+
+$pdo = getDb();
+
+$sql = "
+SELECT
+e.id,
+e.tm_event_id,
+e.title,
+e.event_date,
+e.status,
+v.name AS venue_name,
+v.city AS venue_city,
+v.state AS venue_state
+FROM events e
+LEFT JOIN venues v ON v.id = e.venue_id
+";
+
+$params = [];
+
+if ($keyword !== "") {
+$sql .= " WHERE e.title LIKE ? ";
+$params[] = "%" . $keyword . "%";
+}
+
+$sql .= " ORDER BY e.event_date ASC LIMIT 50 ";
+
+$q = $pdo->prepare($sql);
+$q->execute($params);
+$events = $q->fetchAll(PDO::FETCH_ASSOC);
+?>
 <!DOCTYPE html>
 <html>
 <head>
-<title>UbuntuUnited - Events</title>
-<link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<title>Events</title>
 </head>
-
 <body>
 
-<div class="navbar">
-<div class="logo">UbuntuUnited</div>
-<div class="nav-links">
-<a href="home.php">Home</a>
-<a href="events.php">Events</a>
-<a href="reviews.php">Reviews</a>
-<a href="recommendations.php">Recommendations</a>
-<a href="friends.php">Friends</a>
-<a href="invite.php">Invites</a>
-<a href="notifications.php">Notifications</a>
-<a href="search.php">Search</a>
-<a href="logout.php">Logout</a>
-</div>
-</div>
+<h1>Events</h1>
 
-<div class="page-wrapper">
-<div class="container">
+<form method="get" action="events.php">
+<label>Search:</label>
+<input type="text" name="keyword" value="<?php echo htmlspecialchars($keyword); ?>">
+<button type="submit">Search</button>
+<a href="events.php">Clear</a>
+</form>
 
-<h1>Browse Events</h1>
+<br>
 
-<div class="search-box">
-<input type="text" placeholder="Search events, artists, venues">
-<button>Search</button>
-</div>
+<?php if ($errorMsg != "") { ?>
+<p style="color:red;"><?php echo htmlspecialchars($errorMsg); ?></p>
+<?php } ?>
 
-<div class="card-grid">
+<?php if (!$events || count($events) == 0) { ?>
+<p>No events found.</p>
+<?php } else { ?>
 
-<?php foreach ($events as $event): ?>
+<table border="1" cellpadding="8" cellspacing="0">
+<tr>
+<th>Title</th>
+<th>Date</th>
+<th>Venue</th>
+<th>Status</th>
+<th>TM ID</th>
+<th>Details</th>
+</tr>
 
-<div class="card">
+<?php foreach ($events as $e) { ?>
+<tr>
+<td><?php echo htmlspecialchars($e["title"]); ?></td>
+<td><?php echo htmlspecialchars($e["event_date"]); ?></td>
+<td>
+<?php
+$venueText = "";
+if (!empty($e["venue_name"])) {
+$venueText .= $e["venue_name"];
+}
+if (!empty($e["venue_city"]) || !empty($e["venue_state"])) {
+$venueText .= " (" . $e["venue_city"] . ", " . $e["venue_state"] . ")";
+}
+if ($venueText == "") {
+$venueText = "Unknown Venue";
+}
+echo htmlspecialchars($venueText);
+?>
+</td>
+<td><?php echo htmlspecialchars($e["status"]); ?></td>
+<td><?php echo htmlspecialchars(!empty($e["tm_event_id"]) ? $e["tm_event_id"] : "N/A"); ?></td>
+<td>
+<a href="event_details.php?event_id=<?php echo (int)$e["id"]; ?>">View</a>
+</td>
+</tr>
+<?php } ?>
 
-<h2><?php echo $event["title"]; ?></h2>
+</table>
 
-<p><strong>Date:</strong> <?php echo $event["date"]; ?></p>
-
-<p><strong>Location:</strong> <?php echo $event["location"]; ?></p>
-
-<p><?php echo $event["description"]; ?></p>
-
-<div class="button-row">
-
-<a class="btn" href="event_details.php?id=<?php echo $event["id"]; ?>">
-View Event
-</a>
-
-<a class="btn secondary-btn" href="reviews.php">
-Write Review
-</a>
-
-<a class="btn secondary-btn" href="notifications.php">
-Book Event
-</a>
-
-<a class="btn secondary-btn" href="invite.php">
-Invite Friends
-</a>
-
-</div>
-
-</div>
-
-<?php endforeach; ?>
-
-</div>
-
-</div>
-</div>
+<?php } ?>
 
 </body>
 </html>
