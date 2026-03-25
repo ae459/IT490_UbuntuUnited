@@ -126,7 +126,7 @@ function searchArtists($pdo, $req) {
 
 	$q = $pdo->prepare("SELECT id, name, genre FROM artists WHERE name LIKE ? ORDER BY name ASC LIMIT 25");
 	$q->execute([$term]);
-	$rows = $q->fetchaALL(PDO::FETCH_ASSOC);
+	$rows = $q->fetchALL(PDO::FETCH_ASSOC);
 	
 	return ["success"=>true, "artists"=>$rows];
 }
@@ -358,10 +358,10 @@ function getPendingNotifications($pdo, $req) {
 
 function markNotificationSent($pdo, $req) {
 	$id = (int)$req["notification_id"];
-	
+
 	$q = $pdo->prepare("UPDATE notifications SET status='SENT', sent_at=NOW() WHERE id=?");
 	$q->execute([$id]);
-	
+
 	return ["success"=>true, "message"=>"Marked sent"];
 
 }
